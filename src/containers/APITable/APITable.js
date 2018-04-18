@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import ReactTable from 'react-table';
-import "react-table/react-table.css";
+import TableRow from "../../components/TableRow/TableRow";
+
 
 class APITable extends Component {
   
@@ -22,7 +22,7 @@ class APITable extends Component {
   
   searchHandler = () => {
     let params = '';
-    let maxAndStart = '&maxResults=20&startIndex=' + (1 + 20 * (this.state.page - 1));
+    let maxAndStart = '&maxResults=5&startIndex=' + (1 + 5 * (this.state.page - 1));
     const APIkey = '&key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g';
     const fields = '&fields=totalItems,items(id,volumeInfo(title,authors,publishedDate,categories,imageLinks(smallThumbnail),previewLink))';
     
@@ -37,7 +37,8 @@ class APITable extends Component {
       .then(res => res.json())
         .then(data => {
           this.setState({results: data.items, totalItems: data.totalItems});
-        });  
+          console.log(data);
+        });
   }
   
   pageHandler = (pageIndex) => {
@@ -49,34 +50,6 @@ class APITable extends Component {
     
     let results = this.state.results;
     
-    const columns = [{
-        Header: 'Image',
-        id: 'image',
-        Cell: (row) => {
-          if(row.original.volumeInfo.imageLinks)
-            return (<div><img height={100} src={row.original.volumeInfo.imageLinks.smallThumbnail} alt='thumbnail'/></div>)}
-      },
-      {
-        Header: 'Title',
-        accessor: 'volumeInfo.title',
-        id: 'title'
-      },
-      {
-        Header: 'Authors',
-        accessor: 'volumeInfo.authors',
-        id: 'authors'
-      },
-      {
-        Header: 'Published Date',
-        accessor: 'volumeInfo.publishedDate',
-        id: 'date'
-      },
-      {
-        Header: 'Link',
-        id: 'link',
-        Cell: (row) => (<a href={row.original.volumeInfo.previewLink} target='_blank'>Preview</a>)
-      }
-    ];
     
     return (
       <div className='container'>
@@ -103,15 +76,27 @@ class APITable extends Component {
         >
           Search
         </button>
-        <ReactTable
-          columns={columns}
-          data={results}
-          className='-striped -highlight'
-          manual
-          pages={Math.ceil(this.state.totalItems/20)}
-          page={this.state.page}
-          onPageChange={(pageIndex) => this.pageHandler(pageIndex)}
-        />
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Title</th>
+              <th>Authors</th>
+              <th>Published</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((entry) => {
+              return (
+              <TableRow
+                key={entry.id}
+                data={entry}
+              />
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     );
   }
