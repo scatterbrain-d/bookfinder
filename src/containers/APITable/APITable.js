@@ -6,10 +6,11 @@ class APITable extends Component {
   
   
   state = {
-    cast: []
+    cast: [],
+    searchInput: ''
   }
   
-  componentWillMount() {
+  componentWillMount = () => {
     let cast;
     fetch('https://swapi.co/api/people/')
       .then(res => res.json())
@@ -17,6 +18,21 @@ class APITable extends Component {
           cast = data.results;
           this.setState({cast: cast});
         });
+  }
+  
+  inputHandler = (event) => {
+    this.setState({searchInput: event.target.value});
+  }
+  
+  searchHandler = () => {
+    console.log(this.state);
+    let params = '?search=' + this.state.searchInput;
+    fetch('https://swapi.co/api/people/' + params)
+      .then(res => res.json())
+        .then(data => {
+          const search = data.results;
+          this.setState({cast: search});
+        });  
   }
   
   render() {
@@ -38,6 +54,16 @@ class APITable extends Component {
     
     return (
       <div className='container'>
+        <input
+          type='text'
+          value={this.state.searchInput}
+          onChange={(event) => this.inputHandler(event)}
+        />
+        <button
+          onClick={this.searchHandler}
+        >
+          Search
+        </button>
         <ReactTable
           columns={columns}
           data={people}
