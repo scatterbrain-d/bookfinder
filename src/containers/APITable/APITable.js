@@ -6,49 +6,74 @@ class APITable extends Component {
   
   
   state = {
-    cast: [],
-    searchInput: ''
-  }
-  
-  componentWillMount = () => {
-    let cast;
-    fetch('https://swapi.co/api/people/')
-      .then(res => res.json())
-        .then(data => {
-          cast = data.results;
-          this.setState({cast: cast});
-        });
+    results: [],
+    titleInput: '',
+    authorInput: '',
+    categoryInput: '',
+    startIndex: 1
   }
   
   inputHandler = (event) => {
-    this.setState({searchInput: event.target.value});
+    this.setState({[event.target.name]: event.target.value});
   }
   
+  // Google Books API key
+  // key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g
+  
   searchHandler = () => {
-    console.log(this.state);
-    let params = '?search=' + this.state.searchInput;
-    fetch('https://swapi.co/api/people/' + params)
+    let params = '';
+    let maxAndStart = '&maxResults=20&startIndex=' + this.state.startIndex;
+    const APIkey = '&key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g';
+    const fields = '&fields=totalItems,items(id,volumeInfo(title,authors,publishedDate,categories,imageLinks(smallThumbnail),previewLink))'
+    
+    if (this.state.titleInput)
+      {params += 'intitle:' + this.state.titleInput + '&';
+      console.log(params);}
+    if (this.state.authorInput)
+      {params += 'inauthor:' + this.state.authorInput + '&';}
+    if (this.state.categoryInput)
+      {console.log("cat param hit");
+      params += 'subject' + this.state.categoryInput + '&';}
+    console.log('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields);
+    
+    fetch('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields)
       .then(res => res.json())
         .then(data => {
-          const search = data.results;
-          this.setState({cast: search});
+          const search = data.items;
+          this.setState({results: search});
         });  
   }
   
   render() {
     
-    let people = this.state.cast;
+    let results = this.state.results;
     
     const columns = [{
-      Header: 'Name',
-      accessor: 'name'
-      },{
-      Header: 'Films',
-      accessor: p => p.films.length,
-      id: 'films'
-      },{
-      Header: 'Gender',
-      accessor: 'gender'
+        Header: 'Image',
+        id: 'image',
+        Cell: (row) => {
+          if(row.original.volumeInfo.imageLinks)
+            return (<div><img height={100} src={row.original.volumeInfo.imageLinks.smallThumbnail} alt='thumbnail'/></div>)}
+      },
+      {
+        Header: 'Title',
+        accessor: 'volumeInfo.title',
+        id: 'title'
+      },
+      {
+        Header: 'Authors',
+        accessor: 'volumeInfo.authors',
+        id: 'authors'
+      },
+      {
+        Header: 'Published Date',
+        accessor: 'volumeInfo.publishedDate',
+        id: 'date'
+      },
+      {
+        Header: 'Link',
+        id: 'link',
+        Cell: (row) => (<a href={row.original.volumeInfo.previewLink} target='_blank'>Preview</a>)
       }
     ];
     
@@ -56,7 +81,20 @@ class APITable extends Component {
       <div className='container'>
         <input
           type='text'
-          value={this.state.searchInput}
+          name='titleInput'
+          value={this.state.titleInput}
+          onChange={(event) => this.inputHandler(event)}
+        />
+        <input
+          type='text'
+          name='authorInput'
+          value={this.state.authorInput}
+          onChange={(event) => this.inputHandler(event)}
+        />
+        <input
+          type='text'
+          name='categoryInput'
+          value={this.state.categoryInput}
           onChange={(event) => this.inputHandler(event)}
         />
         <button
@@ -66,7 +104,8 @@ class APITable extends Component {
         </button>
         <ReactTable
           columns={columns}
-          data={people}
+          data={results}
+          className='-striped -highlight'
         />
       </div>
     );
