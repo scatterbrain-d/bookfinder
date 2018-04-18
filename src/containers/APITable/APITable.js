@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import ReactTable from 'react-table';
+import "react-table/react-table.css";
 
 class APITable extends Component {
   
@@ -21,12 +23,26 @@ class APITable extends Component {
     
     let people = this.state.cast;
     
+    const columns = [{
+      Header: 'Name',
+      accessor: 'name'
+      },{
+      Header: 'Films',
+      accessor: p => p.films.length,
+      id: 'films'
+      },{
+      Header: 'Gender',
+      accessor: 'gender'
+      }
+    ];
+    
     return (
-      <div>
-        {people.map(person => (
-          <p key={person.name}>{person.name}</p>
-        ))}
-      </div>  
+      <div className='container'>
+        <ReactTable
+          columns={columns}
+          data={people}
+        />
+      </div>
     );
   }
 }
