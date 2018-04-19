@@ -15,7 +15,7 @@ const tableRow = (props) => {
       <td>{props.data.volumeInfo.title}</td>
       <td>{authors}</td>
       <td>{props.data.volumeInfo.publishedDate}</td>
-      <td><a href={props.data.volumeInfo.previewLink}>Start Reading</a></td>
+      <td><a href={props.data.volumeInfo.previewLink} target='_blank'>Start Reading</a></td>
     </tr>
     );
 };

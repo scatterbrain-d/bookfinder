@@ -8,11 +8,14 @@ class APITable extends Component {
   
   state = {
     results: [],
+    page: 1,
     totalItems: 0,
     titleInput: '',
     authorInput: '',
     categoryInput: '',
-    page: 1
+    titleSort: false,
+    authorSort: false,
+    dateSort: false
   }
   
   inputHandler = (event) => {
@@ -50,15 +53,29 @@ class APITable extends Component {
     let newResults = this.state.results;
     console.log(newResults);
     newResults.sort((a,b) => {
-      const aVal = a.volumeInfo[[event.target.name]] || 'zz';
-      const bVal = b.volumeInfo[[event.target.name]] || 'zz';
-      // if(!aVal) aVal = 0;
-      console.log(aVal, bVal);
-      if (aVal < bVal) return -1;
-      if (aVal > bVal) return 1;
-      return 0;
+      let sort;
+      switch(event.target.name) {
+        case('title'): {
+          sort = this.state.titleSort;
+          this.setState({titleSort: !sort});
+        break;}
+        case('authors'): {
+          sort = this.state.authorSort;
+          this.setState({authorSort: !sort});
+        break;}
+        case('publishedDate'): {
+          sort = this.state.dateSort;
+          this.setState({dateSort: !sort});
+        break;}
+        default: sort = this.state.titleSort;
+      }
+      const aVal = a.volumeInfo[[event.target.name]] || 'ZZ';
+      const bVal = b.volumeInfo[[event.target.name]] || 'ZZ';
+      (console.log(aVal, bVal));
+      return sort ? 
+      (aVal > bVal ? 1 : aVal < bVal ? -1 : 0)
+      : (bVal > aVal ? 1 : bVal < aVal ? -1 : 0);
     });
-    console.log(newResults);
     this.setState({results: newResults});
   }
   
@@ -76,6 +93,7 @@ class APITable extends Component {
     
     return (
       <div className='container'>
+        <h1>BookFinder</h1>
         <input
           type='text'
           name='titleInput'
