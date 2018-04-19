@@ -5,41 +5,34 @@ const pageSize = 10;
 
 class APITable extends Component {
   
-  
   state = {
     results: [],
     page: 1,
     totalItems: 0,
-    titleInput: '',
-    authorInput: '',
-    categoryInput: '',
+    searchBy: 'Title',
+    input: '',
     titleSort: false,
     authorSort: false,
     dateSort: false
   }
   
   inputHandler = (event) => {
-    console.log(event.target);
-    if(event.target.name === 'page') {
-      this.setState({[event.target.name]: Number(event.target.value)});
-      this.searchHandler();
-    } else {
-      this.setState({[event.target.name]: event.target.value});
-    }
+      this.setState({[event.target.name]: event.target.value, page: 1});
   }
   
   searchHandler = () => {
-    let params = '';
     let maxAndStart = '&maxResults='+pageSize+'&startIndex=' + (1 + pageSize * (this.state.page - 1));
     const APIkey = '&key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g';
     const fields = '&fields=totalItems,items(id,volumeInfo(title,authors,publishedDate,categories,imageLinks(smallThumbnail),previewLink))';
+    let searchPrefix, params;
     
-    if (this.state.titleInput)
-      params += 'intitle:' + this.state.titleInput + '&';
-    if (this.state.authorInput)
-      params += 'inauthor:' + this.state.authorInput + '&';
-    if (this.state.categoryInput)
-      params += 'subject' + this.state.categoryInput + '&';
+    switch(this.state.searchBy) {
+      case('Title'): searchPrefix = 'intitle:'; break;
+      case('Author'): searchPrefix = 'inauthor:'; break;
+      case('Subject'): searchPrefix = 'subject'; break;
+      default: searchPrefix = 'intitle:';
+    }
+    params = searchPrefix + this.state.input + '&';
     
     fetch('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields)
       .then(res => res.json())
@@ -49,9 +42,7 @@ class APITable extends Component {
   }
   
   columnSortHandler = (event) => {
-    console.log(event.target, event.target.name);
     let newResults = this.state.results;
-    console.log(newResults);
     newResults.sort((a,b) => {
       let sort;
       switch(event.target.name) {
@@ -90,64 +81,56 @@ class APITable extends Component {
     
     let results = this.state.results;
     
-    
     return (
       <div className='container'>
         <h1>BookFinder</h1>
-        <input
-          type='text'
-          name='titleInput'
-          value={this.state.titleInput}
-          onChange={(event) => this.inputHandler(event)}
-        />
-        <input
-          type='text'
-          name='authorInput'
-          value={this.state.authorInput}
-          onChange={(event) => this.inputHandler(event)}
-        />
-        <input
-          type='text'
-          name='categoryInput'
-          value={this.state.categoryInput}
-          onChange={(event) => this.inputHandler(event)}
-        />
-        <button
-          onClick={this.searchHandler}
-        >
-          Search
-        </button>
+        
+        <span>
+          Search by 
+          <select
+            name='searchBy'
+            value={this.state.searchBy}
+            onChange={(event) => this.inputHandler(event)}
+          >
+            <option>Title</option>
+            <option>Author</option>
+            <option>Subject</option>
+          </select>
+          <input
+            name='input'
+            value={this.state.input}
+            onChange={(event) => this.inputHandler(event)}
+          />
+          <button onClick={this.searchHandler}>Search</button>
+        </span>
+        
         <table>
           <thead>
             <tr>
-              <th
-              >Image</th>
-              <th>
-                <button
+              <th>Image</th>
+              
+              <th><button
                 name='title'
                 onClick={(event) => this.columnSortHandler(event)}
               >Title
-              </button>
-              </th>
-              <th>
-                <button
+              </button></th>
+              
+              <th><button
                 name='authors'
                 onClick={(event) => this.columnSortHandler(event)}
               >Authors
-              </button>
-              </th>
-              <th>
-                <button
+              </button></th>
+              
+              <th><button
                 name='publishedDate'
                 onClick={(event) => this.columnSortHandler(event)}
               >Published
-              </button>
-              </th>
-              <th
+              </button></th>
               
-              >Preview</th>
+              <th>Preview</th>
             </tr>
           </thead>
+          
           <tbody>
             {results.map((entry) => {
               return (
@@ -160,22 +143,15 @@ class APITable extends Component {
           </tbody>
         </table>
         <div>
-        <button
-          onClick={() => this.pageHandler(-1)}
-        >Previous</button>
+        
+        <button onClick={() => this.pageHandler(-1)}>Previous</button>
+        
         <span>
-          <input
-            type='number'
-            name='page'
-            min='1'
-            value={this.state.page}
-            onChange={(event) => this.inputHandler(event)}
-          />
-          /{Math.ceil(this.state.totalItems/pageSize)}
+          Page: {this.state.page}/{Math.ceil(this.state.totalItems/pageSize)}
         </span>
-        <button
-          onClick={() => this.pageHandler(1)}
-        >Next</button>
+        
+        <button onClick={() => this.pageHandler(1)}>Next</button>
+        
         </div>
       </div>
     );
