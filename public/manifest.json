@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "BookFinder",
+  "name": "BookFinder API Search",
   "icons": [
     {
       "src": "favicon.ico",
