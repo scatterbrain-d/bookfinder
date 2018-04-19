@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import TableRow from '../../components/TableRow/TableRow';
 import Spinner from '../../components/Spinner/Spinner';
+import Aux from '../../components/Aux/Aux';
 
 const pageSize = 10;
+
+// APITable calls the Google Books API and returns results based
+// on user-entered search criteria
 
 class APITable extends Component {
   
@@ -19,10 +23,12 @@ class APITable extends Component {
     loading: false
   }
   
+  // binds the user search inputs to the state
   inputHandler = (event) => {
       this.setState({[event.target.name]: event.target.value, page: 1});
   }
   
+  //applies parameters to API call - page, page size, desired fields, and user search parameters
   searchHandler = () => {
     let maxAndStart = '&maxResults='+pageSize+'&startIndex=' + (1 + pageSize * (this.state.page - 1));
     const APIkey = '&key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g';
@@ -38,7 +44,7 @@ class APITable extends Component {
       default: searchPrefix = 'intitle:';
     }
     params = searchPrefix + this.state.input + '&';
-    
+    console.log('fetching');
     fetch('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields)
       .then(res => res.json())
         .then(data => {
@@ -49,6 +55,7 @@ class APITable extends Component {
         });
   }
   
+  //toggles column sort in ascending or descending order
   columnSortHandler = (event) => {
     let newResults = this.state.results;
     newResults.sort((a,b) => {
@@ -78,6 +85,7 @@ class APITable extends Component {
     this.setState({results: newResults});
   }
   
+  //returns a new page of results from the API
   pageHandler = (diff) => {
     const newPage = this.state.page + diff;
     if (newPage <= 0 || newPage > Math.ceil(this.state.totalItems/pageSize)) return;
@@ -88,14 +96,38 @@ class APITable extends Component {
   render() {
     
     let results = this.state.results;
-    let table= '';
     
+    //removes publish date and preview columns for mobile viewing
+    let extraColumns = null;
+    if (window.innerWidth > 550) {
+      extraColumns = (
+        <Aux>
+          <th><button
+            name='publishedDate'
+            onClick={(event) => this.columnSortHandler(event)}
+          >Published
+          </button></th>
+          
+          <th>Preview</th>
+        </Aux>
+    )}
+    
+    //render table as long as loading is false and results exist, otherwise it's hidden
+    let table= '';
     if (!this.state.loading && this.state.results.length > 0) {
       table = (
         <div>
-          <table>
-            <thead>
-              <tr>
+          <div className='pages'>
+            <button onClick={() => this.pageHandler(-1)}>Previous</button>
+            
+            <span>
+              Page: {this.state.page}/{Math.ceil(this.state.totalItems/pageSize)}
+            </span>
+            
+            <button onClick={() => this.pageHandler(1)}>Next</button>
+          </div>
+          <table className='resultsTable'>
+            <thead className='tableHeaders'><tr>
                 <th>Image</th>
                 
                 <th><button
@@ -109,16 +141,8 @@ class APITable extends Component {
                   onClick={(event) => this.columnSortHandler(event)}
                 >Authors
                 </button></th>
-                
-                <th><button
-                  name='publishedDate'
-                  onClick={(event) => this.columnSortHandler(event)}
-                >Published
-                </button></th>
-                
-                <th>Preview</th>
-              </tr>
-            </thead>
+                {extraColumns}
+            </tr></thead>
             
             <tbody>
               {results.map((entry) => {
@@ -131,29 +155,24 @@ class APITable extends Component {
               })}
             </tbody>
           </table>
-          <div>
-            <button onClick={() => this.pageHandler(-1)}>Previous</button>
-            
-            <span>
-              Page: {this.state.page}/{Math.ceil(this.state.totalItems/pageSize)}
-            </span>
-            
-            <button onClick={() => this.pageHandler(1)}>Next</button>
-          </div>
         </div>
         );
     } else if (this.state.loading)
       table = <Spinner/>;
     
+    //displays error message if there was a problem with API call
     if (this.state.errorMsg)
       table = <div className='error'>{this.state.errorMsg.toString()}</div>;
     
     return (
       <div className='container'>
-        <h1>BookFinder</h1>
+        <div className='logo'>
+          <img src='https://cloud.glstock.com/23142/1889854/book-mascot.jpg' alt='Bookly'/>
+          <h1>BookFinder</h1>
+        </div>
         
-        <span>
-          Search by 
+        <span className='searchBar'>
+          <span>Search by</span> 
           <select
             name='searchBy'
             value={this.state.searchBy}
@@ -171,6 +190,7 @@ class APITable extends Component {
           <button onClick={this.searchHandler}>Search</button>
         </span>
         {table}
+        <p className='credit'>Powered by Google Books API</p>
       </div>
     );
   }
