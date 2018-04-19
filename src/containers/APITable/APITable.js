@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import TableRow from "../../components/TableRow/TableRow";
+import TableRow from '../../components/TableRow/TableRow';
 
+const pageSize = 10;
 
 class APITable extends Component {
   
@@ -15,14 +16,18 @@ class APITable extends Component {
   }
   
   inputHandler = (event) => {
-    this.setState({[event.target.name]: event.target.value});
+    console.log(event.target);
+    if(event.target.name === 'page') {
+      this.setState({[event.target.name]: Number(event.target.value)});
+      this.searchHandler();
+    } else {
+      this.setState({[event.target.name]: event.target.value});
+    }
   }
-  
-  
   
   searchHandler = () => {
     let params = '';
-    let maxAndStart = '&maxResults=5&startIndex=' + (1 + 5 * (this.state.page - 1));
+    let maxAndStart = '&maxResults='+pageSize+'&startIndex=' + (1 + pageSize * (this.state.page - 1));
     const APIkey = '&key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g';
     const fields = '&fields=totalItems,items(id,volumeInfo(title,authors,publishedDate,categories,imageLinks(smallThumbnail),previewLink))';
     
@@ -37,12 +42,30 @@ class APITable extends Component {
       .then(res => res.json())
         .then(data => {
           this.setState({results: data.items, totalItems: data.totalItems});
-          console.log(data);
         });
   }
   
-  pageHandler = (pageIndex) => {
-    this.setState({page: pageIndex});
+  columnSortHandler = (event) => {
+    console.log(event.target, event.target.name);
+    let newResults = this.state.results;
+    console.log(newResults);
+    newResults.sort((a,b) => {
+      const aVal = a.volumeInfo[[event.target.name]] || 'zz';
+      const bVal = b.volumeInfo[[event.target.name]] || 'zz';
+      // if(!aVal) aVal = 0;
+      console.log(aVal, bVal);
+      if (aVal < bVal) return -1;
+      if (aVal > bVal) return 1;
+      return 0;
+    });
+    console.log(newResults);
+    this.setState({results: newResults});
+  }
+  
+  pageHandler = (diff) => {
+    const newPage = this.state.page + diff;
+    if (newPage <= 0 || newPage > Math.ceil(this.state.totalItems/pageSize)) return;
+    this.setState({page: newPage});
     this.searchHandler();
   }
   
@@ -79,11 +102,32 @@ class APITable extends Component {
         <table>
           <thead>
             <tr>
-              <th>Image</th>
-              <th>Title</th>
-              <th>Authors</th>
-              <th>Published</th>
-              <th>Preview</th>
+              <th
+              >Image</th>
+              <th>
+                <button
+                name='title'
+                onClick={(event) => this.columnSortHandler(event)}
+              >Title
+              </button>
+              </th>
+              <th>
+                <button
+                name='authors'
+                onClick={(event) => this.columnSortHandler(event)}
+              >Authors
+              </button>
+              </th>
+              <th>
+                <button
+                name='publishedDate'
+                onClick={(event) => this.columnSortHandler(event)}
+              >Published
+              </button>
+              </th>
+              <th
+              
+              >Preview</th>
             </tr>
           </thead>
           <tbody>
@@ -97,6 +141,24 @@ class APITable extends Component {
             })}
           </tbody>
         </table>
+        <div>
+        <button
+          onClick={() => this.pageHandler(-1)}
+        >Previous</button>
+        <span>
+          <input
+            type='number'
+            name='page'
+            min='1'
+            value={this.state.page}
+            onChange={(event) => this.inputHandler(event)}
+          />
+          /{Math.ceil(this.state.totalItems/pageSize)}
+        </span>
+        <button
+          onClick={() => this.pageHandler(1)}
+        >Next</button>
+        </div>
       </div>
     );
   }

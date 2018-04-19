@@ -2,3 +2,7 @@
   width: 60%;
   margin: auto;
 }
+
+th, td {
+  border: 1px solid black;
+}
