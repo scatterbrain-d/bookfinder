@@ -20,17 +20,16 @@ class APITable extends Component {
     titleSort: false,
     authorSort: false,
     dateSort: false,
-    loading: false
+    loading: false,
+    called: false
   }
   
   // binds the user search inputs to the state. Forbids symbols that could disrupt the API call.
   inputHandler = (event) => {
     const regex = /^[\w?\s?\b?]+$/gi;
     if(!regex.test(event.target.value) && event.target.value !== '') {
-      console.log('no!');
       event.preventDefault();
     } else {
-      console.log('yes!');
       this.setState({[event.target.name]: event.target.value, page: 1});
     }
   }
@@ -51,14 +50,14 @@ class APITable extends Component {
       default: searchPrefix = 'intitle:';
     }
     params = searchPrefix + this.state.input + '&';
-    console.log(('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields));
+    
     fetch('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields)
       .then(res => res.json())
         .then(data => {
-          this.setState({results: data.items, totalItems: data.totalItems, loading: false});
+          this.setState({results: data.items, totalItems: data.totalItems, loading: false, called: true});
         }).catch(error => {
           console.log(error);
-          this.setState({errorMsg: error, loading: false});
+          this.setState({errorMsg: error, loading: false, called: true});
         });
   }
   
@@ -84,7 +83,6 @@ class APITable extends Component {
       }
       const aVal = a.volumeInfo[[event.target.name]] || 'ZZ';
       const bVal = b.volumeInfo[[event.target.name]] || 'ZZ';
-      (console.log(aVal, bVal));
       return sort ? 
       (aVal > bVal ? 1 : aVal < bVal ? -1 : 0)
       : (bVal > aVal ? 1 : bVal < aVal ? -1 : 0);
@@ -166,7 +164,7 @@ class APITable extends Component {
         );
     } else if (this.state.loading)
         table = <Spinner/>;
-      else
+      else if (this.state.called)
         table = <div className='error'>No results found.</div>;
     
     //displays error message if there was a problem with API call
