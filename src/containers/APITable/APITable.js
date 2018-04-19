@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import TableRow from '../../components/TableRow/TableRow';
+import Spinner from '../../components/Spinner/Spinner';
 
 const pageSize = 10;
 
@@ -11,9 +12,11 @@ class APITable extends Component {
     totalItems: 0,
     searchBy: 'Title',
     input: '',
+    errorMsg: '',
     titleSort: false,
     authorSort: false,
-    dateSort: false
+    dateSort: false,
+    loading: false
   }
   
   inputHandler = (event) => {
@@ -26,6 +29,8 @@ class APITable extends Component {
     const fields = '&fields=totalItems,items(id,volumeInfo(title,authors,publishedDate,categories,imageLinks(smallThumbnail),previewLink))';
     let searchPrefix, params;
     
+    this.setState({loading: true});
+    
     switch(this.state.searchBy) {
       case('Title'): searchPrefix = 'intitle:'; break;
       case('Author'): searchPrefix = 'inauthor:'; break;
@@ -37,7 +42,10 @@ class APITable extends Component {
     fetch('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields)
       .then(res => res.json())
         .then(data => {
-          this.setState({results: data.items, totalItems: data.totalItems});
+          this.setState({results: data.items, totalItems: data.totalItems, loading: false});
+        }).catch(error => {
+          console.log(error);
+          this.setState({errorMsg: error, loading: false});
         });
   }
   
@@ -80,6 +88,65 @@ class APITable extends Component {
   render() {
     
     let results = this.state.results;
+    let table= '';
+    
+    if (!this.state.loading && this.state.results.length > 0) {
+      table = (
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Image</th>
+                
+                <th><button
+                  name='title'
+                  onClick={(event) => this.columnSortHandler(event)}
+                >Title
+                </button></th>
+                
+                <th><button
+                  name='authors'
+                  onClick={(event) => this.columnSortHandler(event)}
+                >Authors
+                </button></th>
+                
+                <th><button
+                  name='publishedDate'
+                  onClick={(event) => this.columnSortHandler(event)}
+                >Published
+                </button></th>
+                
+                <th>Preview</th>
+              </tr>
+            </thead>
+            
+            <tbody>
+              {results.map((entry) => {
+                return (
+                <TableRow
+                  key={entry.id}
+                  data={entry}
+                />
+                );
+              })}
+            </tbody>
+          </table>
+          <div>
+            <button onClick={() => this.pageHandler(-1)}>Previous</button>
+            
+            <span>
+              Page: {this.state.page}/{Math.ceil(this.state.totalItems/pageSize)}
+            </span>
+            
+            <button onClick={() => this.pageHandler(1)}>Next</button>
+          </div>
+        </div>
+        );
+    } else if (this.state.loading)
+      table = <Spinner/>;
+    
+    if (this.state.errorMsg)
+      table = <div className='error'>{this.state.errorMsg.toString()}</div>;
     
     return (
       <div className='container'>
@@ -103,56 +170,7 @@ class APITable extends Component {
           />
           <button onClick={this.searchHandler}>Search</button>
         </span>
-        
-        <table>
-          <thead>
-            <tr>
-              <th>Image</th>
-              
-              <th><button
-                name='title'
-                onClick={(event) => this.columnSortHandler(event)}
-              >Title
-              </button></th>
-              
-              <th><button
-                name='authors'
-                onClick={(event) => this.columnSortHandler(event)}
-              >Authors
-              </button></th>
-              
-              <th><button
-                name='publishedDate'
-                onClick={(event) => this.columnSortHandler(event)}
-              >Published
-              </button></th>
-              
-              <th>Preview</th>
-            </tr>
-          </thead>
-          
-          <tbody>
-            {results.map((entry) => {
-              return (
-              <TableRow
-                key={entry.id}
-                data={entry}
-              />
-              );
-            })}
-          </tbody>
-        </table>
-        <div>
-        
-        <button onClick={() => this.pageHandler(-1)}>Previous</button>
-        
-        <span>
-          Page: {this.state.page}/{Math.ceil(this.state.totalItems/pageSize)}
-        </span>
-        
-        <button onClick={() => this.pageHandler(1)}>Next</button>
-        
-        </div>
+        {table}
       </div>
     );
   }

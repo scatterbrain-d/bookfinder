@@ -14,7 +14,6 @@ const tableRow = (props) => {
   
   //trims long titles
   let title = props.data.volumeInfo.title.substring(0,100);
-  console.log(title.length);
   if (title.length > 99) title += '...';
   
   return (
