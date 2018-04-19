@@ -130,6 +130,13 @@ tbody tr:nth-child(even) {background-color: var(--medbrown);}
   font-family: 'Suez One', serif;
 }
 
+.error {
+  margin: 20px;
+  text-align: center;
+  color: red;
+  font-family: 'Suez One', serif;
+}
+
 @media only screen and (max-width: 550px) {
   
   .container {padding: 0;}

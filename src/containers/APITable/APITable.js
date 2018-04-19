@@ -23,11 +23,17 @@ class APITable extends Component {
     loading: false
   }
   
-  // binds the user search inputs to the state
+  // binds the user search inputs to the state. Forbids symbols that could disrupt the API call.
   inputHandler = (event) => {
+    const regex = /^[\w?\s?\b?]+$/gi;
+    if(!regex.test(event.target.value) && event.target.value !== '') {
+      console.log('no!');
+      event.preventDefault();
+    } else {
+      console.log('yes!');
       this.setState({[event.target.name]: event.target.value, page: 1});
+    }
   }
-  
   //applies parameters to API call - page, page size, desired fields, and user search parameters
   searchHandler = (event) => {
     event.preventDefault();
@@ -45,7 +51,7 @@ class APITable extends Component {
       default: searchPrefix = 'intitle:';
     }
     params = searchPrefix + this.state.input + '&';
-    console.log('fetching');
+    console.log(('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields));
     fetch('https://www.googleapis.com/books/v1/volumes?q=' + params + maxAndStart + APIkey + fields)
       .then(res => res.json())
         .then(data => {
@@ -115,7 +121,7 @@ class APITable extends Component {
     
     //render table as long as loading is false and results exist, otherwise it's hidden
     let table= '';
-    if (!this.state.loading && this.state.results.length > 0) {
+    if (!this.state.loading && this.state.results && this.state.results.length > 0) {
       table = (
         <div>
           <div className='pages'>
@@ -159,7 +165,9 @@ class APITable extends Component {
         </div>
         );
     } else if (this.state.loading)
-      table = <Spinner/>;
+        table = <Spinner/>;
+      else
+        table = <div className='error'>No results found.</div>;
     
     //displays error message if there was a problem with API call
     if (this.state.errorMsg)
