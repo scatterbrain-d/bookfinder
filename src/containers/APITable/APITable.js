@@ -29,7 +29,8 @@ class APITable extends Component {
   }
   
   //applies parameters to API call - page, page size, desired fields, and user search parameters
-  searchHandler = () => {
+  searchHandler = (event) => {
+    event.preventDefault();
     let maxAndStart = '&maxResults='+pageSize+'&startIndex=' + (1 + pageSize * (this.state.page - 1));
     const APIkey = '&key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g';
     const fields = '&fields=totalItems,items(id,volumeInfo(title,authors,publishedDate,categories,imageLinks(smallThumbnail),previewLink))';
@@ -86,11 +87,11 @@ class APITable extends Component {
   }
   
   //returns a new page of results from the API
-  pageHandler = (diff) => {
+  pageHandler = (event, diff) => {
     const newPage = this.state.page + diff;
     if (newPage <= 0 || newPage > Math.ceil(this.state.totalItems/pageSize)) return;
     this.setState({page: newPage});
-    this.searchHandler();
+    this.searchHandler(event);
   }
   
   render() {
@@ -118,13 +119,13 @@ class APITable extends Component {
       table = (
         <div>
           <div className='pages'>
-            <button onClick={() => this.pageHandler(-1)}>Previous</button>
+            <button onClick={(event) => this.pageHandler(event, -1)}>Previous</button>
             
             <span>
               Page: {this.state.page}/{Math.ceil(this.state.totalItems/pageSize)}
             </span>
             
-            <button onClick={() => this.pageHandler(1)}>Next</button>
+            <button onClick={(event) => this.pageHandler(event, 1)}>Next</button>
           </div>
           <table className='resultsTable'>
             <thead className='tableHeaders'><tr>
@@ -171,7 +172,7 @@ class APITable extends Component {
           <h1>BookFinder</h1>
         </div>
         
-        <span className='searchBar'>
+        <form className='searchBar'>
           <span>Search by</span> 
           <select
             name='searchBy'
@@ -187,8 +188,8 @@ class APITable extends Component {
             value={this.state.input}
             onChange={(event) => this.inputHandler(event)}
           />
-          <button onClick={this.searchHandler}>Search</button>
-        </span>
+          <button onClick={(event) => this.searchHandler(event)}>Search</button>
+        </form>
         {table}
         <p className='credit'>Powered by Google Books API</p>
       </div>
