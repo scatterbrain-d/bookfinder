@@ -3,8 +3,6 @@ import TableRow from '../../components/TableRow/TableRow';
 import Spinner from '../../components/Spinner/Spinner';
 import Aux from '../../components/Aux/Aux';
 
-const pageSize = 10;
-
 // APITable calls the Google Books API and returns results based
 // on user-entered search criteria
 
@@ -21,7 +19,8 @@ class APITable extends Component {
     authorSort: false,
     dateSort: false,
     loading: false,
-    called: false
+    called: false,
+    pageSize: 10
   }
   
   // binds the user search inputs to the state. Forbids symbols that could disrupt the API call.
@@ -36,7 +35,7 @@ class APITable extends Component {
   //applies parameters to API call - page, page size, desired fields, and user search parameters
   searchHandler = (event) => {
     event.preventDefault();
-    let maxAndStart = '&maxResults='+pageSize+'&startIndex=' + (1 + pageSize * (this.state.page - 1));
+    let maxAndStart = '&maxResults='+this.state.pageSize+'&startIndex=' + (1 + this.state.pageSize * (this.state.page - 1));
     const APIkey = '&key=AIzaSyBWeTQ4CaU31-FevfbyRtiThB_AOuzAz7g';
     const fields = '&fields=totalItems,items(id,volumeInfo(title,authors,publishedDate,categories,imageLinks(smallThumbnail),previewLink))';
     let searchPrefix, params;
@@ -93,7 +92,7 @@ class APITable extends Component {
   //returns a new page of results from the API
   pageHandler = (event, diff) => {
     const newPage = this.state.page + diff;
-    if (newPage <= 0 || newPage > Math.ceil(this.state.totalItems/pageSize)) return;
+    if (newPage <= 0 || newPage > Math.ceil(this.state.totalItems/this.state.pageSize)) return;
     this.setState({page: newPage});
     this.searchHandler(event);
   }
@@ -126,7 +125,7 @@ class APITable extends Component {
             <button onClick={(event) => this.pageHandler(event, -1)}>Previous</button>
             
             <span>
-              Page: {this.state.page}/{Math.ceil(this.state.totalItems/pageSize)}
+              Page: {this.state.page}/{Math.ceil(this.state.totalItems/this.state.pageSize)}
             </span>
             
             <button onClick={(event) => this.pageHandler(event, 1)}>Next</button>
@@ -197,6 +196,19 @@ class APITable extends Component {
           <button onClick={(event) => this.searchHandler(event)}>Search</button>
         </form>
         {table}
+        <span className='searchBar'>
+          <span>Page Size</span>
+          <select
+            name='pageSize'
+            value={this.state.pageSize}
+            onChange={(event) => this.inputHandler(event)}
+          >
+            <option>10</option>
+            <option>20</option>
+            <option>30</option>
+            <option>40</option>
+          </select>
+        </span>
         <p className='credit'>Powered by Google Books API</p>
       </div>
     );
