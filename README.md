@@ -74,3 +74,4 @@ seen in the app as you're clicking through the pages and the total page count oc
 
 I had initially wanted to provide searching with multiple parameters at once - title and author for example - 
 but the API search algorithm puts so much emphasis on the first parameter that the second is all but ignored.
+

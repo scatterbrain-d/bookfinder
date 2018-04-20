@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import TableRow from '../../components/TableRow/TableRow';
-import Spinner from '../../components/Spinner/Spinner';
-import Aux from '../../components/Aux/Aux';
+
+import Logo from '../../components/Logo/Logo';
+import SearchBar from '../../components/SearchBar/SearchBar';
+import Table from '../../components/Table/Table';
+import PageSizer from '../../components/PageSizer/PageSizer';
 
 // APITable calls the Google Books API and returns results based
 // on user-entered search criteria
@@ -99,116 +101,35 @@ class APITable extends Component {
   
   render() {
     
-    let results = this.state.results;
-    
-    //removes publish date and preview columns for mobile viewing
-    let extraColumns = null;
-    if (window.innerWidth > 550) {
-      extraColumns = (
-        <Aux>
-          <th><button
-            name='publishedDate'
-            onClick={(event) => this.columnSortHandler(event)}
-          >Published
-          </button></th>
-          
-          <th>Preview</th>
-        </Aux>
-    )}
-    
-    //render table as long as loading is false and results exist, otherwise it's hidden
-    let table= '';
-    if (!this.state.loading && this.state.results && this.state.results.length > 0) {
-      table = (
-        <div>
-          <div className='pages'>
-            <button onClick={(event) => this.pageHandler(event, -1)}>Previous</button>
-            
-            <span>
-              Page: {this.state.page}/{Math.ceil(this.state.totalItems/this.state.pageSize)}
-            </span>
-            
-            <button onClick={(event) => this.pageHandler(event, 1)}>Next</button>
-          </div>
-          <table className='resultsTable'>
-            <thead className='tableHeaders'><tr>
-                <th>Image</th>
-                
-                <th><button
-                  name='title'
-                  onClick={(event) => this.columnSortHandler(event)}
-                >Title
-                </button></th>
-                
-                <th><button
-                  name='authors'
-                  onClick={(event) => this.columnSortHandler(event)}
-                >Authors
-                </button></th>
-                {extraColumns}
-            </tr></thead>
-            
-            <tbody>
-              {results.map((entry) => {
-                return (
-                <TableRow
-                  key={entry.id}
-                  data={entry}
-                />
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        );
-    } else if (this.state.loading)
-        table = <Spinner/>;
-      else if (this.state.called)
-        table = <div className='error'>No results found.</div>;
-    
-    //displays error message if there was a problem with API call
-    if (this.state.errorMsg)
-      table = <div className='error'>{this.state.errorMsg.toString()}</div>;
-    
     return (
       <div className='container'>
-        <div className='logo'>
-          <img src='https://cloud.glstock.com/23142/1889854/book-mascot.jpg' alt='Bookly'/>
-          <h1>BookFinder</h1>
-        </div>
         
-        <form className='searchBar'>
-          <span>Search by</span> 
-          <select
-            name='searchBy'
-            value={this.state.searchBy}
-            onChange={(event) => this.inputHandler(event)}
-          >
-            <option>Title</option>
-            <option>Author</option>
-            <option>Subject</option>
-          </select>
-          <input
-            name='input'
-            value={this.state.input}
-            onChange={(event) => this.inputHandler(event)}
-          />
-          <button onClick={(event) => this.searchHandler(event)}>Search</button>
-        </form>
-        {table}
-        <span className='searchBar'>
-          <span>Page Size</span>
-          <select
-            name='pageSize'
-            value={this.state.pageSize}
-            onChange={(event) => this.inputHandler(event)}
-          >
-            <option>10</option>
-            <option>20</option>
-            <option>30</option>
-            <option>40</option>
-          </select>
-        </span>
+        <Logo/>
+        
+        <SearchBar
+          input={this.state.input}
+          searchBy={this.state.searchBy}
+          changed={(event) => this.inputHandler(event)}
+          search={(event) => this.searchHandler(event)}
+        />
+        
+        <Table
+          results={this.state.results}
+          loading={this.state.loading}
+          called={this.state.called}
+          errorMsg={this.state.errorMsg}
+          page={this.state.page}
+          pageSize={this.state.pageSize}
+          totalItems={this.state.totalItems}
+          paginate={(event, diff) => this.pageHandler(event, diff)}
+          columnSort={(event) => this.columnSortHandler(event)}
+        />
+        
+        <PageSizer
+          pageSize={this.state.pageSize}
+          changed={(event) => this.inputHandler(event)}
+        />
+        
         <p className='credit'>Powered by Google Books API</p>
       </div>
     );

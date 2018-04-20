@@ -33,26 +33,26 @@ h1 {
   margin: 0 20px;
 }
 
-.searchBar {
+.inlineInput {
   margin: 20px auto;
   display: flex;
   justify-content: center
 }
 
-.searchBar>* {
+.inlineInput>* {
   margin: 0 5px;
   font-size: 1.2em;
   font-family: 'Suez One', serif;
 }
 
-.searchBar select, button {
+.inlineInput select, button {
   box-shadow: 1px 1px #333;
   border-radius: 3px;
 }
 
-.searchBar span {align-self: flex-end;}
+.inlineInput span {align-self: flex-end;}
 
-.searchBar input {border-radius: 3px;}
+.inlineInput input {border-radius: 3px;}
 
 .resultsTable {
   margin: 5px auto;
@@ -151,9 +151,9 @@ tbody tr:nth-child(even) {background-color: var(--medbrown);}
     margin: 0;
   }
   
-  .searchBar>* {font-size: .8em;}
+  .inlineInput>* {font-size: .8em;}
   
-  .searchBar input {max-width: 100px}
+  .inlineInput input {max-width: 100px}
   
   .pages {width: 80%;}
   
